@@ -5,6 +5,8 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#231f20">
+    <!-- Read by the update check below, in this page and in the copy it fetches from the server. -->
+    <meta name="tt-build-version" content="0.6.0">
     <title>Twisted Treeline</title>
     <link rel="icon" type="image/png" href="TemplateData/icons/icon-192.png">
     <link rel="stylesheet" href="TemplateData/style.css">
@@ -52,33 +54,38 @@
         updateBannerVisibility();
       }
 
+      var buildVersion = "0.6.0";
       var buildUrl = "Build";
-      var loaderUrl = buildUrl + "/WebGL.loader.js";
+      // Every release uses the same file names, so the version in the URL is what stops the browser
+      // from loading an older release's files out of its cache.
+      var buildQuery = "?v=" + encodeURIComponent(buildVersion);
+      var loaderUrl = buildUrl + "/WebGL.loader.js" + buildQuery;
       var config = {
         arguments: [],
-        dataUrl: buildUrl + "/WebGL.data",
-        frameworkUrl: buildUrl + "/WebGL.framework.js",
-        codeUrl: buildUrl + "/WebGL.wasm",
+        dataUrl: buildUrl + "/WebGL.data" + buildQuery,
+        frameworkUrl: buildUrl + "/WebGL.framework.js" + buildQuery,
+        codeUrl: buildUrl + "/WebGL.wasm" + buildQuery,
         streamingAssetsUrl: "StreamingAssets",
         // Full screen covers this element; WebPage.jslib looks for the same one.
         fullscreenElementID: "unity-fullscreen-container",
         companyName: "fresolina",
         productName: "Twisted Treeline",
-        productVersion: "0.5.0",
+        productVersion: buildVersion,
         showBanner: unityShowBanner,
       };
 
 
 
       // Before loading, asks the server for this page again, past the browser's cache, and reloads
-      // if it names other build files: the browser (and so the installed app) can serve a cached
-      // page from an older release, whose files latest/ no longer has. The build names its files
-      // by their content hash (Player Settings > Publishing > Name Files As Hashes), so any change
-      // to the build changes a name. Checked once; a failed request just starts the game.
+      // if it is another version: the browser (and so the installed app) can serve a cached page
+      // from an older release, whose files latest/ no longer has. The version is the one CI stamps
+      // into the player (Application.version). A page from before this check carries no version;
+      // that one can only be older, so it does not reload. Checked once; a failed request just
+      // starts the game.
       function isStale(page) {
-        var files = [config.dataUrl, config.frameworkUrl, config.codeUrl]
-          .concat(config.primaryDataUrls || [], config.secondaryDataUrls || []);
-        return files.some((url) => typeof url == "string" && page.indexOf(url.split("/").pop()) < 0);
+        var meta = new DOMParser().parseFromString(page, "text/html")
+          .querySelector('meta[name="tt-build-version"]');
+        return meta != null && meta.content != buildVersion;
       }
 
       function checkForUpdate() {
