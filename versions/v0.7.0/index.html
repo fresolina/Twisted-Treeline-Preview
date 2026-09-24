@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#231f20">
+    <!-- Read by the update check below, in this page and in the copy it fetches from the server. -->
+    <meta name="tt-build-version" content="0.7.0">
+    <title>Twisted Treeline</title>
+    <link rel="icon" type="image/png" href="TemplateData/icons/icon-192.png">
+    <link rel="stylesheet" href="TemplateData/style.css">
+    <!-- Installable as an app: in an app window Chrome and Edge hand Ctrl+W and the other
+         shortcuts they keep from a tab to the page (Assets/Plugins/WebGL/WebPage.jslib). -->
+    <link rel="manifest" href="manifest.webmanifest">
+  </head>
+  <body>
+    <div id="unity-container">
+      <div id="unity-fullscreen-container">
+        <canvas id="unity-canvas" width="1280" height="720" tabindex="-1"></canvas>
+        <div id="unity-loading-container">
+          <div id="unity-loading-bar">
+            <div id="tt-logo"></div>
+            <div id="unity-progress-bar-empty">
+              <div id="unity-progress-bar-full"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="unity-warning"> </div>
+    </div>
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingContainer = document.querySelector("#unity-loading-container");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var warningBanner = document.querySelector("#unity-warning");
+
+      // A temporary banner for a few seconds, or a permanent one on top of the canvas for an error.
+      function unityShowBanner(msg, type) {
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; padding: 10px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; padding: 10px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      var buildVersion = "0.7.0";
+      var buildUrl = "Build";
+      // Every release uses the same file names, so the version in the URL is what stops the browser
+      // from loading an older release's files out of its cache.
+      var buildQuery = "?v=" + encodeURIComponent(buildVersion);
+      var loaderUrl = buildUrl + "/WebGL.loader.js" + buildQuery;
+      var config = {
+        arguments: [],
+        dataUrl: buildUrl + "/WebGL.data" + buildQuery,
+        frameworkUrl: buildUrl + "/WebGL.framework.js" + buildQuery,
+        codeUrl: buildUrl + "/WebGL.wasm" + buildQuery,
+        streamingAssetsUrl: "StreamingAssets",
+        // Full screen covers this element; WebPage.jslib looks for the same one.
+        fullscreenElementID: "unity-fullscreen-container",
+        companyName: "fresolina",
+        productName: "Twisted Treeline",
+        productVersion: buildVersion,
+        showBanner: unityShowBanner,
+      };
+
+
+
+      // Before loading, asks the server for this page again, past the browser's cache, and reloads
+      // if it is another version: the browser (and so the installed app) can serve a cached page
+      // from an older release, whose files latest/ no longer has. The version is the one CI stamps
+      // into the player (Application.version). A page from before this check carries no version;
+      // that one can only be older, so it does not reload. Checked once; a failed request just
+      // starts the game.
+      function isStale(page) {
+        var meta = new DOMParser().parseFromString(page, "text/html")
+          .querySelector('meta[name="tt-build-version"]');
+        return meta != null && meta.content != buildVersion;
+      }
+
+      function checkForUpdate() {
+        var reloadedAt = 0;
+        try { reloadedAt = +sessionStorage.getItem("tt-update-reload") || 0; } catch (e) {}
+        // One reload per minute at most, in case a server edge still hands out the old page.
+        if (Date.now() - reloadedAt < 60000) return Promise.resolve(false);
+        return fetch(location.href.split("#")[0], { cache: "no-store" })
+          .then((response) => response.ok ? response.text() : "")
+          .then((page) => {
+            if (!page || !isStale(page)) return false;
+            try { sessionStorage.setItem("tt-update-reload", String(Date.now())); } catch (e) {}
+            location.reload();
+            return true;
+          })
+          .catch(() => false);
+      }
+
+      var script = document.createElement("script");
+      script.src = loaderUrl;
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          if (progress < 1) {
+            loadingContainer.style.display = "block";
+            progressBarFull.style.width = 100 * progress + "%";
+          } else {
+            loadingContainer.style.display = "none";
+          }
+        }).then((unityInstance) => {
+          canvas.focus();
+        }).catch((message) => {
+          alert(message);
+        });
+      };
+      checkForUpdate().then((reloading) => {
+        if (!reloading) document.body.appendChild(script);
+      });
+    </script>
+  </body>
+</html>
