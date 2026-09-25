@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Twisted Treeline WebGL Builds</title>
+  <title>Twisted Treeline Builds</title>
   <style>
     :root { color-scheme: dark; }
     body { margin: 0; font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: linear-gradient(180deg, #11151f 0%, #1c2233 100%); color: #eef1f6; }
@@ -13,7 +13,11 @@
     p { font-size: 1.05rem; line-height: 1.6; max-width: 60ch; color: #97a0af; }
     .card { margin-top: 28px; padding: 24px; border-radius: 14px; background: rgba(30, 36, 50, 0.9); border: 1px solid rgba(255, 255, 255, 0.08); }
     .latest { display: inline-block; margin: 8px 0 24px; padding: 12px 20px; border-radius: 8px; background: #e8b04b; color: #1c1406; font-weight: 700; text-decoration: none; }
+    .latest + .latest { margin-left: 8px; }
+    .latest.download { background: transparent; color: #e8b04b; border: 1px solid #e8b04b; padding: 11px 19px; }
     ul { list-style: none; padding: 0; margin: 0; }
+    a.download-link { margin-left: 12px; color: #97a0af; font-size: 0.9rem; }
+    a.download-link::before { content: "\2913  "; }
     a.version-link { color: #86aeff; text-decoration: none; font-weight: 600; }
     a.version-link:hover { text-decoration: underline; }
     li + li { margin-top: 20px; }
@@ -28,13 +32,37 @@
 <body>
   <main>
     <h1>Twisted Treeline</h1>
-    <p>WebGL builds of the game. A new build is published for every release; each one keeps its own link, and the button below always opens the newest.</p>
+    <p>Builds of the game, to play in the browser or to download for Windows or Linux. A new build is published for every release; each one keeps its own link, and the buttons below always get the newest.</p>
     <a class="latest" href="latest/">Play the latest build</a>
+    <a class="latest download" href="versions/v0.9.0/TwistedTreeline-v0.9.0-Windows.zip">Download for Windows</a>
+    <a class="latest download" href="versions/v0.9.0/TwistedTreeline-v0.9.0-Linux.zip">Download for Linux</a>
     <section class="card">
       <h2>Builds</h2>
       <ul>
-        <li><a class="version-link" href="versions/v0.8.0/">v0.8.0  2026-09-24 (2f9ce767)</a>
+        <li><a class="version-link" href="versions/v0.9.0/">v0.9.0  2026-09-25 (3e993069)</a>
+          <a class="download-link" href="versions/v0.9.0/TwistedTreeline-v0.9.0-Windows.zip">Windows</a>
+          <a class="download-link" href="versions/v0.9.0/TwistedTreeline-v0.9.0-Linux.zip">Linux</a>
           <details open><summary>What's new</summary><div class="notes">
+<h3>Features</h3>
+<ul>
+<li>In game chat, so the players can chat with each other. Activate it with the &quot;Enter&quot; key.</li>
+<li>Killing dragon gives all allies a buff, called Dragon&#39;s Might.</li>
+<li>level up sound</li>
+<li>Local chat bubble</li>
+<li>New hero Besiktaren.</li>
+<li>New hero FöretaGAREN.</li>
+<li>New hero Gamer Dad</li>
+<li>New hero The Dentist</li>
+<li>Recall to base. Press b to teleport you back to base after a few seconds.</li>
+<li>Show mana bar and name of player on hero.</li>
+<li>Special hero interactions</li>
+<li>Stats panel. Press tab to show stats of all players.</li>
+<li>Support pings. Holding alt and clicking on the map, shows a ping to the allies.</li>
+</ul>
+          </div></details>
+        </li>
+        <li><a class="version-link" href="versions/v0.8.0/">v0.8.0  2026-09-24 (2f9ce767)</a>
+          <details><summary>What's new</summary><div class="notes">
 <h3>Features</h3>
 <ul>
 <li>Add brush that heroes can hide in to ambush enemies</li>
